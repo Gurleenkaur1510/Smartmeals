@@ -6,24 +6,32 @@ import toast from 'react-hot-toast';
 
 export default function SignUpPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.ok) {
-      toast.success('Account created!');
-      router.push('/auth/signin');
-    } else {
-      toast.error(data.error || 'Something went wrong');
+      if (res.ok) {
+        toast.success('Account created!');
+        router.push('/auth/signin');
+      } else {
+        toast.error(data.error || 'Registration failed');
+      }
+    } catch (err) {
+      toast.error('Something went wrong');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,7 +63,13 @@ export default function SignUpPage() {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
           required
         />
-        <button className="w-full bg-green-600 text-white p-3 rounded hover:bg-green-700">Create Account</button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-green-600 text-white p-3 rounded hover:bg-green-700 disabled:opacity-50"
+        >
+          {loading ? 'Creating...' : 'Create Account'}
+        </button>
       </form>
     </div>
   );

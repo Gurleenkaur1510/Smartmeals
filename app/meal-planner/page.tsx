@@ -20,7 +20,7 @@ export default function MealPlannerPage() {
   const [planner, setPlanner] = useState<Record<string, Meal>>({});
   const router = useRouter();
 
-  // Redirect if not logged in
+  // 1. Redirect if user is not logged in
   useEffect(() => {
     const checkSession = async () => {
       const session = await getSession();
@@ -29,7 +29,7 @@ export default function MealPlannerPage() {
     checkSession();
   }, [router]);
 
-  // Fetch meals
+  // 2. Fetch all meals
   useEffect(() => {
     const fetchMeals = async () => {
       try {
@@ -43,7 +43,7 @@ export default function MealPlannerPage() {
     fetchMeals();
   }, []);
 
-  // Fetch saved planner
+  // 3. Fetch previously saved planner
   useEffect(() => {
     const fetchPlanner = async () => {
       try {
@@ -68,25 +68,45 @@ export default function MealPlannerPage() {
     fetchPlanner();
   }, []);
 
+  // 4. Assign Meal to Day and save to DB
   const assignMeal = async (day: string) => {
     if (!allMeals.length) return;
+
     const randomMeal = allMeals[Math.floor(Math.random() * allMeals.length)];
+    console.log(`Assigning ${randomMeal.title} to ${day}`);
+
     setPlanner((prev) => ({ ...prev, [day]: randomMeal }));
 
     try {
-      await fetch('/api/mealplans', {
+      const response = await fetch('/api/mealplans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ day, ...randomMeal }),
+        body: JSON.stringify({
+          day,
+          title: randomMeal.title,
+          image: randomMeal.image,
+          calories: randomMeal.calories,
+          description: randomMeal.description,
+        }),
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error('Error saving meal plan:', result.message || result.error);
+      } else {
+        console.log('Meal plan saved:', result);
+      }
     } catch (err) {
-      console.error('Failed to save meal plan:', err);
+      console.error('Network error saving meal plan:', err);
     }
   };
 
+  // 5. Render UI
   return (
     <main className="p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Weekly Meal Planner</h1>
+      <h1 className="text-3xl font-bold mb-6 text-green-700">Weekly Meal Planner</h1>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {weekdays.map((day) => (
           <div key={day} className="border p-4 rounded-md bg-white shadow">
@@ -96,9 +116,9 @@ export default function MealPlannerPage() {
               <Image
                 src={planner[day].image}
                 alt={`Meal for ${day}`}
-                width={200}
-                height={150}
-                className="rounded mb-2"
+                width={300}
+                height={200}
+                className="rounded mb-2 object-cover"
               />
             )}
 
@@ -108,7 +128,7 @@ export default function MealPlannerPage() {
 
             <button
               onClick={() => assignMeal(day)}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
             >
               {planner[day] ? 'Change Meal' : 'Assign Meal'}
             </button>

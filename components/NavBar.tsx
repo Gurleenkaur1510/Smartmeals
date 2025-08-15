@@ -2,16 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 
 const Navbar = () => {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
 
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'Meal Planner', href: '/meal-planner' },
     { name: 'All Meals', href: '/meals' },
     { name: 'Add Meal', href: '/meals/add' },
-    { name: 'Login', href: '/auth/signin' },
   ];
 
   return (
@@ -24,7 +25,7 @@ const Navbar = () => {
           </Link>
 
           {/* Nav links */}
-          <div className="hidden md:flex space-x-6">
+          <div className="hidden md:flex space-x-6 items-center">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -36,6 +37,24 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+
+            {status === 'authenticated' ? (
+              <button
+                onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+                className="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md transition"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className={`hover:bg-green-700 px-3 py-2 rounded-md transition ${
+                  pathname === '/auth/signin' ? 'bg-green-800' : ''
+                }`}
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </div>

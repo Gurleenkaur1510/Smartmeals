@@ -1,9 +1,8 @@
-// models/MealPlan.ts
-import mongoose, { Schema, models, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const MealPlanSchema = new Schema({
+const MealPlanSchema = new mongoose.Schema({
   userId: {
-    type: String, 
+    type: String, // email as string
     required: true,
   },
   day: {
@@ -17,5 +16,5 @@ const MealPlanSchema = new Schema({
   description: String,
 });
 
-const MealPlan = models.MealPlan || model('MealPlan', MealPlanSchema);
+const MealPlan = mongoose.models.MealPlan || mongoose.model('MealPlan', MealPlanSchema);
 export default MealPlan;

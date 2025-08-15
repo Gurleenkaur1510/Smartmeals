@@ -26,8 +26,13 @@ export async function POST(req: NextRequest) {
       password: hashedPassword,
     });
 
-    return NextResponse.json({ message: 'User created', user: { id: newUser._id, email: newUser.email } }, { status: 201 });
-  } catch (error) {
+    return NextResponse.json(
+      { message: 'User created', user: { id: newUser._id, email: newUser.email } },
+      { status: 201 }
+    );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error('[REGISTER_ERROR]', error);
     return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
   }
 }

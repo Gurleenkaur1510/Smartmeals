@@ -1,4 +1,3 @@
-// app/api/mealplans/route.ts
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
@@ -15,7 +14,6 @@ export async function GET() {
     await dbConnect();
 
     const plans = await MealPlan.find({ userId: session.user.email });
-
     return NextResponse.json({ plans });
   } catch (error) {
     console.error('[MEALPLAN_GET_ERROR]', error);
@@ -31,12 +29,22 @@ export async function POST(req: Request) {
     }
 
     const { day, title, image, calories, description } = await req.json();
+    if (!day || !title || !image) {
+      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+    }
 
     await dbConnect();
 
     const updated = await MealPlan.findOneAndUpdate(
       { userId: session.user.email, day },
-      { title, image, calories, description },
+      {
+        userId: session.user.email,
+        day,
+        title,
+        image,
+        calories,
+        description,
+      },
       { new: true, upsert: true }
     );
 
